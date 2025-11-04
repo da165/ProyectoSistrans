@@ -1,6 +1,7 @@
 package uniandes.edu.co.proyecto.controllers;
 import uniandes.edu.co.proyecto.entities.*;
 import uniandes.edu.co.proyecto.services.*;
+import uniandes.edu.co.proyecto.controllers.DTO.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,19 +17,16 @@ public class ServicioController {
 
     // ---------------------- RF8: SOLICITAR UN SERVICIO (TRANSACCIONAL) ----------------------
     @PostMapping("/solicitar")
-    // Se recibe un mapa o un DTO complejo con toda la información necesaria para el servicio.
-    public ResponseEntity<?> solicitarServicio(@RequestBody Map<String, Object> solicitud) {
+    // Usa el DTO como el cuerpo de la petición (@RequestBody)
+    public ResponseEntity<?> solicitarServicio(@RequestBody SolicitudServicioDTO solicitud) {
         try {
-            // NOTA: En una implementación real, se debe deserializar el Map a un DTO
-            // que contenga cliente, tipoServicio, puntos, y costo. 
-            // Aquí se simula la llamada al servicio transaccional.
+            // El servicio maneja toda la complejidad, asegurando que la transacción sea atómica.
+            ServicioEntity nuevoServicio = servicioTransaccionalService.solicitarServicio(solicitud);
             
-            // Ejemplo de llamada simulada:
-            // Servicio nuevoServicio = servicioTransaccionalService.solicitarServicio(cliente, tipo, partida, llegadas, costo);
-
-            return new ResponseEntity<>("Servicio solicitado con éxito. El conductor ha sido asignado. (Se requiere DTO para completar)", HttpStatus.ACCEPTED);
+            // Retorna 201 Created y el objeto Servicio recién creado
+            return new ResponseEntity<>(nuevoServicio, HttpStatus.CREATED);
         } catch (Exception e) {
-            // RF8: Si alguna de las operaciones falla, la transacción debe abortar.
+            // Retorna un error 409 Conflict si la transacción falló (e.g., no hay conductor o pago inválido).
             return new ResponseEntity<>("RF8 Fallido (Transacción Abortada): " + e.getMessage(), HttpStatus.CONFLICT); 
         }
     }
@@ -37,15 +35,16 @@ public class ServicioController {
     @PutMapping("/finalizar/{servicioId}")
     public ResponseEntity<?> finalizarServicio(@PathVariable Long servicioId, @RequestBody Map<String, Double> datosFin) {
         try {
-            // Se asume que el cuerpo de la petición contiene la longitud del trayecto (longitudTrayecto)
+            // Extrae el dato 'longitudTrayecto' del JSON de la petición
             Double longitud = datosFin.get("longitudTrayecto");
             if (longitud == null) {
-                 return new ResponseEntity<>("Falta el campo 'longitudTrayecto'.", HttpStatus.BAD_REQUEST);
+                 return new ResponseEntity<>("RF9 Fallido: Falta el campo 'longitudTrayecto' en el cuerpo de la petición.", HttpStatus.BAD_REQUEST);
             }
             
             ServicioEntity servicioFinalizado = servicioTransaccionalService.finalizarServicio(servicioId, longitud);
             return new ResponseEntity<>(servicioFinalizado, HttpStatus.OK);
         } catch (Exception e) {
+            // Puede fallar si el servicio no existe o si hay un error al actualizar el conductor.
             return new ResponseEntity<>("RF9 Fallido: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
