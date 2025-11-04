@@ -11,7 +11,7 @@ public class DisponibilidadDTO {
     private String horaFin;      // "HH:mm"
     private String tipoServicio; // Transporte pasajeros / comida / mercancías...
     private Long vehiculoId;     // FK del vehículo
-//hola
+//holas
     public String getDiaSemana() {
          return diaSemana; 
         }
