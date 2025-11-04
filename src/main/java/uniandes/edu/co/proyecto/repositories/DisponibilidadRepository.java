@@ -15,11 +15,14 @@ public interface DisponibilidadRepository extends JpaRepository<DisponibilidadEn
     // Busca disponibilidades existentes para un conductor (a través del vehículo) y un día específico,
     // cuya franja horaria se superponga con la nueva franja (horaInicio, horaFin).
     
-    @Query("SELECT d FROM Disponibilidad d WHERE d.vehiculo.conductor = :conductor " +
-           "AND d.diaSemana = :dia AND " +
+    // Use the entity class name (DisponibilidadEntity) and parameter names that
+    // match the method signature. The original query referenced a 'conductor'
+    // parameter which did not exist on the method, causing startup failure.
+    @Query("SELECT d FROM DisponibilidadEntity d WHERE d.vehiculo = :vehiculo " +
+        "AND d.diaSemana = :dia AND " +
            // La lógica de superposición es:
            // (InicioA < FinB) AND (FinA > InicioB)
-           "(:horaInicio < d.horaFin AND :horaFin > d.horaInicio)")
+        "(:horaInicio < d.horaFin AND :horaFin > d.horaInicio)")
     List<DisponibilidadEntity> findSuperposedDisponibilidad(VehiculoEntity vehiculo, DayOfWeek dia, LocalTime horaInicio, LocalTime horaFin);
 
     // Método para buscar disponibilidades por vehículo

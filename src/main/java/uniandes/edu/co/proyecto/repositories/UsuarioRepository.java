@@ -17,7 +17,10 @@ public interface UsuarioRepository extends JpaRepository<UsuarioEntity, Long> {
     // 2. Estén marcados como disponibles (estadoDisponible = true)
     // 3. (La lógica de 'cerca' se manejará mejor en la capa de Servicio, ya que requiere cálculo geográfico)
     
-    @Query("SELECT c FROM UsuarioConductor c WHERE c.estadoDisponible = true")
+    // Use the entity class name (UsuarioConductorEntity) in JPQL. The plain
+    // name 'UsuarioConductor' is not the registered entity name, causing
+    // UnknownEntityException at startup.
+    @Query("SELECT c FROM UsuarioConductorEntity c WHERE c.estadoDisponible = true")
     // Nota: findByEstadoDisponibleAndTipoUsuario solo funciona si no usas la herencia de Single Table
     // Con la herencia, filtramos por la subclase UsuarioConductor
     UsuarioConductorEntity findConductorDisponible(); 
