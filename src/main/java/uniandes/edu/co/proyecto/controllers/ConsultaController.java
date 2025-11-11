@@ -1,80 +1,97 @@
-package uniandes.edu.co.proyecto.controllers;
-import uniandes.edu.co.proyecto.services.*;
-import uniandes.edu.co.proyecto.entities.ServicioEntity;
-import uniandes.edu.co.proyecto.controllers.DTO.*; // Importar los DTOs
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+package uniandes.edu.co.proyecto.controllers;// Paquete donde vive el controlador de consultas (lecturas y pruebas de aislamiento)
 
-import java.util.Date;
-import java.util.List;
+import uniandes.edu.co.proyecto.services.*;// Importa los servicios de la capa de negocio usados por este controlador
+import org.springframework.beans.factory.annotation.Autowired;   // Soporte para inyección de dependencias
+import org.springframework.http.HttpStatus;// Enum con los códigos de estado HTTP
+import org.springframework.http.ResponseEntity;// Envoltura estándar de respuestas HTTP
+import org.springframework.web.bind.annotation.*;// Anotaciones REST (@RestController, @GetMapping, etc.)
+import java.util.Date;// Tipo Date para parámetros de fecha en query
+import java.util.List;// Listas para respuestas con colecciones
 
-@RestController
-@RequestMapping("/api/alpescab/consulta")
+@RestController // Marca esta clase como un controlador REST
+@RequestMapping("/api/alpescab/consulta") // Prefijo base para todas las rutas de este controlador
 public class ConsultaController {
 
-    @Autowired
+    @Autowired // Inyección del servicio de consultas
     private ConsultaService consultaService;
 
-    // ---------------------- RFC1: HISTÓRICO DE SERVICIOS POR USUARIO ----------------------
-    @GetMapping("/historico/usuario/{clienteId}")
-    // Se cambia el tipo de retorno específico a ResponseEntity<List<ServicioEntity>>
-    public ResponseEntity<List<ServicioEntity>> getHistoricoServicios(@PathVariable Long clienteId) {
+    // RFC1: HISTÓRICO DE SERVICIOS POR USUARIO 
+    @GetMapping("/historico/usuario/{clienteId}") // GET /api/alpescab/consulta/historico/usuario/{clienteId}
+    public ResponseEntity<?> getHistoricoServicios(@PathVariable Long clienteId) { // Path variable clienteId
         try {
-            return new ResponseEntity<>(consultaService.consultarHistoricoUsuario(clienteId), HttpStatus.OK);
+            return new ResponseEntity<>( // Respuesta 200 con el histórico
+                consultaService.consultarHistoricoUsuario(clienteId),
+                HttpStatus.OK
+            );
         } catch (Exception e) {
-            // Manejo de error con un objeto de tipo String
-            return new ResponseEntity(e.getMessage(), HttpStatus.NOT_FOUND); 
+            return new ResponseEntity<>( // Si no se encuentra o falla la consulta, 404 con mensaje
+                e.getMessage(),
+                HttpStatus.NOT_FOUND
+            );
         }
     }
     
-    // ---------------------- RFC1: PRUEBAS DE AISLAMIENTO (Punto 3 de la entrega) ----------------------
-    
+    // RFC1: PRUEBAS DE AISLAMIENTO     
     // Escenario de prueba SERIALIZABLE
-    @GetMapping("/historico/usuario/{clienteId}/serializable")
-    public ResponseEntity<List<ServicioEntity>> getHistorico_Serializable(@PathVariable Long clienteId) {
+    @GetMapping("/historico/usuario/{clienteId}/serializable")   // GET /api/alpescab/consulta/historico/usuario/{clienteId}/serializable
+    public ResponseEntity<?> getHistorico_Serializable(@PathVariable Long clienteId) {
         try {
-            List<ServicioEntity> resultado = consultaService.consultarHistoricoUsuario_Serializable(clienteId);
-            return new ResponseEntity<>(resultado, HttpStatus.OK);
+            // Simula la ejecución que bloquea o detecta el conflicto bajo nivel SERIALIZABLE
+            List<?> resultado = consultaService.consultarHistoricoUsuario_Serializable(clienteId);
+            return new ResponseEntity<>(resultado, HttpStatus.OK); // 200 con el resultado de la prueba
         } catch (Exception e) {
-            return new ResponseEntity(e.getMessage(), HttpStatus.CONFLICT);
+            return new ResponseEntity<>(// 500 si ocurre un error controlado en la prueba
+                "Error en consulta SERIALIZABLE: " + e.getMessage(),
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 
     // Escenario de prueba READ_COMMITTED
-    @GetMapping("/historico/usuario/{clienteId}/read-committed")
-    public ResponseEntity<List<ServicioEntity>> getHistorico_ReadCommitted(@PathVariable Long clienteId) {
+    @GetMapping("/historico/usuario/{clienteId}/read-committed") // GET /api/alpescab/consulta/historico/usuario/{clienteId}/read-committed
+    public ResponseEntity<?> getHistorico_ReadCommitted(@PathVariable Long clienteId) {
         try {
-            List<ServicioEntity> resultado = consultaService.consultarHistoricoUsuario_ReadCommitted(clienteId);
-            return new ResponseEntity<>(resultado, HttpStatus.OK);
+            // Simula la ejecución que puede observar/no observar cambios concurrentes en READ_COMMITTED
+            List<?> resultado = consultaService.consultarHistoricoUsuario_ReadCommitted(clienteId);
+            return new ResponseEntity<>(resultado, HttpStatus.OK); // 200 con el resultado de la prueba
         } catch (Exception e) {
-            return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>( // 500 si ocurre un error controlado en la prueba
+                "Error en consulta READ_COMMITTED: " + e.getMessage(),
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 
-    // ---------------------- RFC2: TOP 20 CONDUCTORES ----------------------
-    // ¡Ajustado para devolver el DTO específico!
-    @GetMapping("/top/conductores")
-    public ResponseEntity<List<TopConductorDTO>> getTop20Conductores() {
-        return new ResponseEntity<>(consultaService.findTop20Conductores(), HttpStatus.OK);
+    // RFC2: TOP 20 CONDUCTORES 
+    @GetMapping("/top/conductores") // GET /api/alpescab/consulta/top/conductores
+    public ResponseEntity<List<Object[]>> getTop20Conductores() {
+        // Retorna una lista de filas (Object[]) con las columnas definidas en el repositorio/servicio
+        return new ResponseEntity<>(consultaService.findTop20Conductores(), HttpStatus.OK); // 200 con el top
     }
 
-    // ---------------------- RFC3: GANANCIAS CONDUCTOR ----------------------
-    // ¡Ajustado para devolver el DTO específico!
-    @GetMapping("/ganancias/conductor/{conductorId}")
-    public ResponseEntity<List<GananciaConductorDTO>> getGananciasConductor(@PathVariable Long conductorId) {
-        return new ResponseEntity<>(consultaService.findGananciasConductor(conductorId), HttpStatus.OK);
+    //  RFC3: GANANCIAS CONDUCTOR
+    @GetMapping("/ganancias/conductor/{conductorId}") // GET /api/alpescab/consulta/ganancias/conductor/{conductorId}
+    public ResponseEntity<List<Object[]>> getGananciasConductor(@PathVariable Long conductorId) {
+        return new ResponseEntity<>( // 200 con filas de ganancias (Object[])
+            consultaService.findGananciasConductor(conductorId),
+            HttpStatus.OK
+        );
     }
 
-    // ---------------------- RFC4: UTILIZACIÓN DE SERVICIOS EN CIUDAD Y RANGO ----------------------
-    // ¡Ajustado para devolver el DTO específico!
-    @GetMapping("/utilizacion/{ciudadNombre}")
-    public ResponseEntity<List<UtilizacionServiciosDTO>> getUsoServicios(
-            @PathVariable String ciudadNombre,
-            @RequestParam @org.springframework.format.annotation.DateTimeFormat(pattern="yyyy-MM-dd") Date fechaInicio,
-            @RequestParam @org.springframework.format.annotation.DateTimeFormat(pattern="yyyy-MM-dd") Date fechaFin) {
+    // RFC4: UTILIZACIÓN DE SERVICIOS EN CIUDAD Y RANGO
+    @GetMapping("/utilizacion/{ciudadNombre}") // GET /api/alpescab/consulta/utilizacion/{ciudadNombre}?fechaInicio=yyyy-MM-dd&fechaFin=yyyy-MM-dd
+    public ResponseEntity<List<Object[]>> getUsoServicios(
+            @PathVariable String ciudadNombre, // Nombre de la ciudad como parte de la ruta
+            @RequestParam // Query param fechaInicio en formato yyyy-MM-dd
+            @org.springframework.format.annotation.DateTimeFormat(pattern="yyyy-MM-dd")
+            Date fechaInicio,
+            @RequestParam  // Query param fechaFin en formato yyyy-MM-dd
+            @org.springframework.format.annotation.DateTimeFormat(pattern="yyyy-MM-dd")
+            Date fechaFin) {
         
-        return new ResponseEntity<>(consultaService.findUsoServicios(ciudadNombre, fechaInicio, fechaFin), HttpStatus.OK);
+        return new ResponseEntity<>( // 200 con las filas que describen el uso
+            consultaService.findUsoServicios(ciudadNombre, fechaInicio, fechaFin),
+            HttpStatus.OK
+        );
     }
 }

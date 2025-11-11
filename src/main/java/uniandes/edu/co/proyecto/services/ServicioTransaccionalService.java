@@ -19,7 +19,7 @@ public class ServicioTransaccionalService {
     @Autowired private MediosPagoRepository medioDePagoRepository;
     @Autowired private PuntoGeoRepository puntoGeograficoRepository;
 
-    // ---------------------- RF8: SOLICITAR UN SERVICIO (TRANSACCIONAL) ----------------------
+    // RF8: SOLICITAR UN SERVICIO (TRANSACCIONAL) 
     // Debe ser atómica. Si una falla, todas fallan (rollback).
     @Transactional
     public ServicioEntity solicitarServicio(SolicitudServicioDTO solicitud) throws Exception {
@@ -88,7 +88,7 @@ public class ServicioTransaccionalService {
         return servicioRepository.save(nuevoServicio);
     }
     
-    // ---------------------- RF9: REGISTRAR EL FINAL DE UN VIAJE (TRANSACCIONAL) ----------------------
+    // RF9: REGISTRAR EL FINAL DE UN VIAJE (TRANSACCIONAL)
     @Transactional
     public ServicioEntity finalizarServicio(Long servicioId, Double longitudTrayecto) throws Exception {
         ServicioEntity servicio = servicioRepository.findById(servicioId)
