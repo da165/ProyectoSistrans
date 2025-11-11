@@ -30,34 +30,33 @@ JOIN
     USUARIO_SERVICIO US ON V.ID_USUARIO_SERVICIO = US.ID
 JOIN 
     USUARIO UP ON US.ID = UP.ID  -- UP: Usuario Pasajero
-    
--- 2. Unir con el Conductor
+-- 2. Unir con el conductor
 JOIN 
-    USUARIO_CONDUCTOR COND ON V.ID_USUARIO_CONDUCTOR = COND.ID
-JOIN 
-    USUARIO UC ON COND.ID = UC.ID -- UC: Usuario Conductor
-    
--- 3. Unir con el Vehículo
-LEFT JOIN 
+    USUARIO_CONDUCTOR UC_REF ON V.ID_USUARIO_CONDUCTOR = UC_REF.ID
+JOIN
+    USUARIO UC ON UC_REF.ID = UC.ID -- UC: Usuario Conductor
+-- 3. Unir con el vehículo
+JOIN
     VEHICULO VEH ON V.ID_VEHICULO = VEH.ID
-    
--- 4. Unir con los Puntos Geográficos (Inicio y Fin)
+-- 4. Unir con Puntos Geográficos de Inicio y Fin
 JOIN 
-    PUNTO_GEOGRAFICO PI ON V.ID_PUNTO_INICIO = PI.ID  -- PI: Punto Inicio
+    PUNTO_GEOGRAFICO PI ON V.ID_PUNTO_INICIO = PI.ID -- PI: Punto Inicio
 JOIN 
-    PUNTO_GEOGRAFICO PF ON V.ID_PUNTO_FIN = PF.ID     -- PF: Punto Fin
-
--- 5. Unir con la Revisión (puede no existir, por eso usamos LEFT JOIN)
-LEFT JOIN 
+    PUNTO_GEOGRAFICO PF ON V.ID_PUNTO_FIN = PF.ID   -- PF: Punto Fin
+-- 5. Unir con la Revisión (puede ser opcional)
+LEFT JOIN
     REVISION R ON V.ID = R.ID_VIAJE
     
 WHERE 
     --FILTRO por usuario servicio específico
-    V.ID_USUARIO_SERVICIO = 2 
+    V.ID_USUARIO_SERVICIO = :clienteId 
     
 ORDER BY V.HORA_INICIO DESC;
 
+
+------------------------------------------------------------------------------------------------
 -- RFC2: Top 20 conductores con más servicios
+------------------------------------------------------------------------------------------------
 SELECT u.ID_USUARIO_CONDUCTOR AS CONDUCTOR_ID, usun.NOMBRE, COUNT(*) AS TOTAL_SERVICIOS
 FROM VIAJE u
 JOIN USUARIO_CONDUCTOR uc ON uc.ID = u.ID_USUARIO_CONDUCTOR
@@ -67,29 +66,35 @@ ORDER BY TOTAL_SERVICIOS DESC
 FETCH FIRST 20 ROWS ONLY;
 
 
--- RFC3: Total dinero obtenido por conductor por vehículo y por servicio
+------------------------------------------------------------------------------------------------
+-- RFC3: Total dinero obtenido por conductor por vehículo y por tipo de servicio
+------------------------------------------------------------------------------------------------
+-- **CORRECCIÓN APLICADA** (Se asume que la FK de VIAJE a SERVICIO es ID_SERVICIO)
 -- (60% para el conductor)
 SELECT v.ID_USUARIO_CONDUCTOR,
 ve.ID AS VEHICULO_ID,
 s.ID AS SERVICIO_ID,
 s.TIPO, s.NIVEL,
-SUM(NVL(v.PRECIO,0) * 0.6) AS TOTAL_CONDUCTOR
+SUM(NVL(v.COSTO_TOTAL,0) * 0.6) AS TOTAL_CONDUCTOR 
 FROM VIAJE v
-JOIN VEHICULO ve ON ve.ID = v.VEHICULO_ID
-LEFT JOIN SERVICIO s ON s.ID = v.SERVICIO_ID
+JOIN VEHICULO ve ON ve.ID = v.ID_VEHICULO
+LEFT JOIN SERVICIO s ON s.ID = v.ID_SERVICIO  -- ***CORRECCIÓN: De SERVICIO_ID a ID_SERVICIO***
 GROUP BY v.ID_USUARIO_CONDUCTOR, ve.ID, s.ID, s.TIPO, s.NIVEL
-ORDER BY v.ID_USUARIO_CONDUCTOR, ve.ID;
+ORDER BY v.ID_USUARIO_CONDUCTOR;
 
 
--- RFC4: Utilización de servicios en una ciudad y rango de fechas
--- :ciudadId, :desde (timestamp), :hasta (timestamp)
+------------------------------------------------------------------------------------------------
+-- RFC4: Utilización de servicios en una ciudad durante un rango de fechas
+------------------------------------------------------------------------------------------------
+-- **CORRECCIÓN APLICADA** (Se arregla el identificador y se usa la estructura de la consulta fallida)
 WITH base AS (
 SELECT s.TIPO, s.NIVEL, COUNT(*) AS CNT
 FROM VIAJE v
-JOIN SERVICIO s ON s.ID = v.SERVICIO_ID
-JOIN PUNTO_GEOGRAFICO p ON p.ID = v.ORIGEN_ID
-WHERE v.FECHA_SALIDA >= :desde AND v.FECHA_SALIDA < :hasta
-AND p.CIUDAD_ID = :ciudadId
+JOIN SERVICIO s ON s.ID = v.ID_SERVICIO  -- ***CORRECCIÓN: De SERVICIO_ID a ID_SERVICIO***
+JOIN PUNTO_GEOGRAFICO p ON p.ID = v.ID_PUNTO_INICIO -- Se asume el punto de inicio del viaje para la ciudad
+JOIN CIUDAD c ON c.ID = p.ID_CIUDAD
+WHERE v.HORA_INICIO >= :desde AND v.HORA_INICIO < :hasta
+AND c.ID = :ciudadId
 GROUP BY s.TIPO, s.NIVEL
 )
 SELECT b.TIPO, b.NIVEL, b.CNT,
