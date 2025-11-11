@@ -1,8 +1,7 @@
 package uniandes.edu.co.proyecto.services;
 import uniandes.edu.co.proyecto.entities.*;
 import uniandes.edu.co.proyecto.repositories.*;
-import uniandes.edu.co.proyecto.controllers.DTO.*; // Nueva importación de DTOs
-
+import uniandes.edu.co.proyecto.controllers.DTO.*; 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -12,7 +11,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors; // Necesario para el mapeo a DTOs
+import java.util.stream.Collectors; 
 
 @Service
 public class ConsultaService {
@@ -30,83 +29,80 @@ public class ConsultaService {
         return servicioRepository.findByUsuarioCliente(cliente);
     }
 
-    // ---------------------- RFC1 con Nivel de Aislamiento SERIALIZABLE (Punto 3) ----------------------
+    // ---------------------- RFC1 con Nivel de Aislamiento SERIALIZABLE ----------------------
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public List<ServicioEntity> consultarHistoricoUsuario_Serializable(Long clienteId) throws Exception {
-        // Primera consulta (El nivel SERIALIZABLE debería prevenir la "lectura fantasma")
         List<ServicioEntity> primeraConsulta = consultarHistoricoUsuario(clienteId);
         
-        // Temporizador de 30 segundos
         try {
             TimeUnit.SECONDS.sleep(30);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
-        // Segunda consulta: si una transacción RF8 intenta insertar un nuevo servicio aquí,
-        // SERIALIZABLE la forzará a esperar o fallar (dependiendo de la BD).
         List<ServicioEntity> segundaConsulta = consultarHistoricoUsuario(clienteId);
         
         return segundaConsulta; 
     }
 
-    // ---------------------- RFC1 con Nivel de Aislamiento READ_COMMITTED (Punto 3) ----------------------
+    // ---------------------- RFC1 con Nivel de Aislamiento READ_COMMITTED ----------------------
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public List<ServicioEntity> consultarHistoricoUsuario_ReadCommitted(Long clienteId) throws Exception {
-        // Primera consulta (Lee solo lo commiteado)
         List<ServicioEntity> primeraConsulta = consultarHistoricoUsuario(clienteId);
         
-        // Temporizador de 30 segundos
         try {
             TimeUnit.SECONDS.sleep(30);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
-        // Segunda consulta (Si una transacción RF8 se COMMITTED durante la espera, la verá aquí)
         List<ServicioEntity> segundaConsulta = consultarHistoricoUsuario(clienteId);
         
-        return segundaConsulta; // Retorna el resultado de la segunda consulta
+        return segundaConsulta; 
     }
 
     // ---------------------- RFC2: TOP 20 CONDUCTORES (Retorna DTO) ----------------------
     public List<TopConductorDTO> findTop20Conductores() {
-        // El repositorio devuelve List<Object[]>. Se mapea a DTO.
         List<Object[]> resultados = servicioRepository.findTop20Conductores();
         
         return resultados.stream()
             .map(result -> new TopConductorDTO(
-                ((Number) result[0]).longValue(),  // conductorId
-                ((Number) result[1]).longValue()   // numeroServicios
+                ((Number) result[0]).longValue(), 
+                ((Number) result[1]).longValue()   
             ))
             .collect(Collectors.toList());
     }
 
     // ---------------------- RFC3: GANANCIAS CONDUCTOR (Retorna DTO) ----------------------
     public List<GananciaConductorDTO> findGananciasConductor(Long conductorId) {
-        // El repositorio devuelve List<Object[]>. Se mapea a DTO.
         List<Object[]> resultados = servicioRepository.findGananciasConductorPorVehiculoYServicio(conductorId);
         
         return resultados.stream()
             .map(result -> new GananciaConductorDTO(
-                (String) result[0],                      // placaVehiculo
-                (String) result[1],                      // tipoServicio
-                ((Number) result[2]).doubleValue()       // gananciasTotales (Se usa Number para manejo flexible de tipos numéricos de la BD)
+                (String) result[0],                      // placaVehiculo (String)
+                (String) result[1],                      // tipoServicio (String)
+                ((Number) result[2]).doubleValue()       
             ))
             .collect(Collectors.toList());
     }
 
     // ---------------------- RFC4: UTILIZACIÓN DE SERVICIOS EN CIUDAD (Retorna DTO) ----------------------
     public List<UtilizacionServiciosDTO> findUsoServicios(String ciudadNombre, Date fechaInicio, Date fechaFin) {
-         // El repositorio devuelve List<Object[]>. Se mapea a DTO.
-        List<Object[]> resultados = servicioRepository.findUsoServiciosPorCiudadYRango(ciudadNombre, fechaInicio, fechaFin);
-        
-        return resultados.stream()
-            .map(result -> new UtilizacionServiciosDTO(
-                (String) result[0],                      // tipoServicio
-                ((Number) result[1]).longValue(),        // numeroServicios
-                ((Number) result[2]).doubleValue()       // porcentajeUso
-            ))
-            .collect(Collectors.toList());
+         List<Object[]> resultados = servicioRepository.findUsoServiciosPorCiudadYRango(ciudadNombre, fechaInicio, fechaFin);
+         
+         
+         return resultados.stream()
+             .map(result -> {
+                 // Manejo de valores nulos o tipos inesperados
+                 Long numServicios = result[1] instanceof Number ? ((Number) result[1]).longValue() : 0L;
+                 Double porcentaje = result[2] instanceof Number ? ((Number) result[2]).doubleValue() : 0.0;
+                 
+                 return new UtilizacionServiciosDTO(
+                     (String) result[0],                      // tipoServicio (String)
+                     numServicios,                            // numeroServicios
+                     porcentaje                               // porcentajeUso
+                 );
+             })
+             .collect(Collectors.toList());
     }
 }
