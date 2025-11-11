@@ -1,6 +1,7 @@
 package uniandes.edu.co.proyecto.services;
 import uniandes.edu.co.proyecto.entities.*;
 import uniandes.edu.co.proyecto.repositories.*;
+import uniandes.edu.co.proyecto.controllers.DTO.*; 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -10,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors; 
 
 @Service
 public class ConsultaService {
@@ -21,7 +23,7 @@ public class ConsultaService {
     public List<ServicioEntity> consultarHistoricoUsuario(Long clienteId) throws Exception {
         Optional<UsuarioEntity> userOpt = usuarioRepository.findById(clienteId);
         if (userOpt.isEmpty() || !(userOpt.get() instanceof UsuarioServicioEntity)) {
-            throw new Exception("Cliente no encontrado.");
+            throw new Exception("Cliente no encontrado o no es un usuario de servicio.");
         }
         UsuarioServicioEntity cliente = (UsuarioServicioEntity) userOpt.get();
         return servicioRepository.findByUsuarioCliente(cliente);
@@ -30,43 +32,33 @@ public class ConsultaService {
     //  RFC1 con Nivel de Aislamiento SERIALIZABLE (Punto 3) 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public List<ServicioEntity> consultarHistoricoUsuario_Serializable(Long clienteId) throws Exception {
-        // Primera consulta (para observar el efecto de SERIALIZABLE en el escenario de prueba) [cite: 128]
         List<ServicioEntity> primeraConsulta = consultarHistoricoUsuario(clienteId);
-
-        // Temporizador de 30 segundos (para la prueba de concurrencia con RF8) [cite: 127]
+        
         try {
             TimeUnit.SECONDS.sleep(30);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
-        // Segunda consulta (para observar si la orden de servicio de RF8 aparece) [cite: 128]
         List<ServicioEntity> segundaConsulta = consultarHistoricoUsuario(clienteId);
         
-        // En este nivel (SERIALIZABLE), la segunda consulta debería ser idéntica a la primera,
-        // sin ver cambios hechos por transacciones concurrentes.
-        return segundaConsulta; // Retorna el resultado de la segunda consulta
+        return segundaConsulta; 
     }
 
     //  RFC1 con Nivel de Aislamiento READ_COMMITTED (Punto 3)
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public List<ServicioEntity> consultarHistoricoUsuario_ReadCommitted(Long clienteId) throws Exception {
-        // Primera consulta
         List<ServicioEntity> primeraConsulta = consultarHistoricoUsuario(clienteId);
         
-        // Temporizador de 30 segundos [cite: 127]
         try {
             TimeUnit.SECONDS.sleep(30);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
-        // Segunda consulta (para observar el efecto de READ_COMMITTED en el escenario de prueba) [cite: 128]
         List<ServicioEntity> segundaConsulta = consultarHistoricoUsuario(clienteId);
         
-        // En este nivel (READ_COMMITTED), la segunda consulta podría mostrar el resultado de una 
-        // transacción RF8 que se haya COMMITTED durante la espera.
-        return segundaConsulta; // Retorna el resultado de la segunda consulta
+        return segundaConsulta; 
     }
 
     // RFC2: TOP 20 CONDUCTORES

@@ -11,20 +11,18 @@ import java.util.List;
 @Repository
 public interface DisponibilidadRepository extends JpaRepository<DisponibilidadEntity, Long> {
 
-    // Método para verificar la superposición (RF5, RF6).
-    // Busca disponibilidades existentes para un conductor (a través del vehículo) y un día específico,
-    // cuya franja horaria se superponga con la nueva franja (horaInicio, horaFin).
-    
-    // Use the entity class name (DisponibilidadEntity) and parameter names that
-    // match the method signature. The original query referenced a 'conductor'
-    // parameter which did not exist on the method, causing startup failure.
+    // Método para verificar la superposición (RF5).
     @Query("SELECT d FROM DisponibilidadEntity d WHERE d.vehiculo = :vehiculo " +
         "AND d.diaSemana = :dia AND " +
-           // La lógica de superposición es:
-           // (InicioA < FinB) AND (FinA > InicioB)
         "(:horaInicio < d.horaFin AND :horaFin > d.horaInicio)")
     List<DisponibilidadEntity> findSuperposedDisponibilidad(VehiculoEntity vehiculo, DayOfWeek dia, LocalTime horaInicio, LocalTime horaFin);
 
-    // Método para buscar disponibilidades por vehículo
-    List<DisponibilidadEntity> findByVehiculo(VehiculoEntity vehiculo);
+    // Método para verificar la superposición (RF6), EXCLUYENDO el ID actual. (AÑADIDO)
+    @Query("SELECT d FROM DisponibilidadEntity d WHERE d.id <> :idExcluir AND d.vehiculo = :vehiculo " +
+        "AND d.diaSemana = :dia AND " +
+        "(:horaInicio < d.horaFin AND :horaFin > d.horaInicio)")
+    List<DisponibilidadEntity> findSuperposedDisponibilidadExcluyendoId(Long idExcluir, VehiculoEntity vehiculo, DayOfWeek dia, LocalTime horaInicio, LocalTime horaFin);
+
+    // Método para buscar disponibilidad por vehículo, día y hora de inicio (útil para consultas)
+    DisponibilidadEntity findByVehiculoAndDiaSemanaAndHoraInicio(VehiculoEntity vehiculo, DayOfWeek diaSemana, LocalTime horaInicio);
 }

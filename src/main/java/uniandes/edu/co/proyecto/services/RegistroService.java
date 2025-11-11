@@ -1,6 +1,8 @@
 package uniandes.edu.co.proyecto.services;
 import uniandes.edu.co.proyecto.entities.*;
 import uniandes.edu.co.proyecto.repositories.*;
+import uniandes.edu.co.proyecto.controllers.DTO.DisponibilidadDTO; 
+import uniandes.edu.co.proyecto.controllers.DTO.RevisionDTO;      
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,10 +23,10 @@ public class RegistroService {
     @Autowired private PuntoGeoRepository puntoGeograficoRepository;
     @Autowired private RevisionRepository revisionRepository;
     @Autowired private MediosPagoRepository medioDePagoRepository;
+    @Autowired private ServicioRepository servicioRepository; // NECESARIO para RF10/RF11
 
     // RF1: REGISTRAR CIUDAD 
     public CiudadEntity registrarCiudad(CiudadEntity ciudad) {
-        // Validación básica, aunque en un proyecto real se podría buscar por nombre antes de guardar.
         return ciudadRepository.save(ciudad);
     }
 
@@ -37,12 +39,8 @@ public class RegistroService {
         }
         return usuarioRepository.save(cliente);
     }
-
-    public UsuarioConductorEntity registrarUsuarioConductor(UsuarioConductorEntity conductor) throws Exception {
-        // Validación: Cédula y Correo Único
-        if (usuarioRepository.findByNumeroCedula(conductor.getNumeroCedula()) != null) {
-            throw new Exception("Ya existe un usuario registrado con esa cédula.");
-        }
+    
+    public UsuarioConductorEntity registrarUsuarioConductor(UsuarioConductorEntity conductor) {
         return usuarioRepository.save(conductor);
     }
 
@@ -64,10 +62,52 @@ public class RegistroService {
     public DisponibilidadEntity registrarDisponibilidad(DisponibilidadEntity disponibilidad) throws Exception {
         // Lógica de negocio: No debe superponerse con ninguna disponibilidad existente.
         List<DisponibilidadEntity> superpuestas = disponibilidadRepository.findSuperposedDisponibilidad(
-            disponibilidad.getVehiculo(),
-            disponibilidad.getDiaSemana(),
-            disponibilidad.getHoraInicio(),
-            disponibilidad.getHoraFin()
+            vehiculo, 
+            diaSemana, 
+            horaInicio, 
+            horaFin
+        );
+
+        if (!superpuestas.isEmpty()) {
+            throw new Exception("RF5 Fallido: La nueva disponibilidad se superpone con una franja existente.");
+        }
+        
+        // 4. Crear y Guardar la entidad
+        DisponibilidadEntity nuevaDisponibilidad = new DisponibilidadEntity(
+            diaSemana, 
+            horaInicio, 
+            horaFin, 
+            disponibilidadDTO.getTipoServicio(),
+            vehiculo 
+        );
+
+        return disponibilidadRepository.save(nuevaDisponibilidad);
+    }
+
+    // ---------------------- RF6: MODIFICAR DISPONIBILIDAD (CORREGIDO) ----------------------
+    public void modificarDisponibilidad(Long id, String nuevaHoraInicioStr, String nuevaHoraFinStr) throws Exception {
+        DisponibilidadEntity actual = disponibilidadRepository.findById(id)
+            .orElseThrow(() -> new Exception("RF6 Fallido: Disponibilidad con ID " + id + " no encontrada."));
+        
+        LocalTime nuevaHoraInicio;
+        LocalTime nuevaHoraFin;
+        try {
+            nuevaHoraInicio = LocalTime.parse(nuevaHoraInicioStr);
+            nuevaHoraFin = LocalTime.parse(nuevaHoraFinStr);
+        } catch (Exception e) {
+            throw new Exception("RF6 Fallido: Formato de hora inválido.");
+        }
+
+        
+        VehiculoEntity vehiculo = actual.getVehiculo();
+        DayOfWeek diaSemana = actual.getDiaSemana();
+        
+        List<DisponibilidadEntity> superpuestas = disponibilidadRepository.findSuperposedDisponibilidadExcluyendoId(
+            id, 
+            vehiculo, 
+            diaSemana, 
+            nuevaHoraInicio, 
+            nuevaHoraFin
         );
         
         if (!superpuestas.isEmpty()) {
@@ -115,10 +155,27 @@ public class RegistroService {
         if (revisionRepository.findByServicio_Id(revision.getServicio().getId()) != null) {
             throw new Exception("Ya existe una revisión registrada para este servicio.");
         }
-        // Validar que la calificación esté entre 0 y 5.
-        if (revision.getCalificacion() < 0 || revision.getCalificacion() > 5) {
-            throw new Exception("La calificación debe estar entre 0 y 5.");
+        
+        // 3. Lógica de negocio: Solo puede haber una revisión por servicio
+        if (revisionRepository.findByServicio_Id(servicio.getId()) != null) {
+            throw new Exception("RF10/RF11 Fallido: Ya existe una revisión registrada para este servicio.");
         }
+        
+        // 4. Validar calificación
+        Integer calificacion = revisionDTO.getCalificacion();
+        if (calificacion == null || calificacion < 0 || calificacion > 5) {
+            throw new Exception("RF10/RF11 Fallido: La calificación debe estar entre 0 y 5.");
+        }
+        
+        // 5. Crear la entidad
+        RevisionEntity revision = new RevisionEntity(
+            calificacion, 
+            revisionDTO.getComentario(), 
+            servicio,                 
+            clienteRevisor,           
+            conductorRevisado         
+        );
+        
         return revisionRepository.save(revision);
     }
     

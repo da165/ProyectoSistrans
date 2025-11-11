@@ -39,10 +39,9 @@
     "item": [
         {
             "name": "I. Registro (RF1-RF7, RF10/RF11)",
-            "description": "Endpoints para el registro de entidades básicas (Ciudad, Usuarios, Vehículo, Disponibilidad, Puntos Geográficos y Revisiones).",
             "item": [
                 {
-                    "name": "RF1: Registrar Ciudad",
+                    "name": "RF1: Registrar Ciudad (POST /registro/ciudad)",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -53,7 +52,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"nombre\": \"Bogotá\"\n}"
+                            "raw": "{\n    \"nombre\": \"Bogota\"\n}"
                         },
                         "url": {
                             "raw": "{{baseURL}}/api/alpescab/registro/ciudad",
@@ -71,7 +70,7 @@
                     "response": []
                 },
                 {
-                    "name": "RF2: Registrar Usuario Cliente",
+                    "name": "RF2: Registrar Cliente (POST /registro/usuario/cliente)",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -82,7 +81,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correoElectronico\": \"juan.perez@mail.com\",\n  \"numeroCelular\": \"3001234567\",\n  \"numeroCedula\": \"1020304050\",\n  \"tarjetaCredito\": \"1234567890123456\" \n}"
+                            "raw": "{\n    \"nombre\": \"Cliente Postman\",\n    \"correoElectronico\": \"cliente.postman@email.com\",\n    \"numeroCelular\": \"3009999999\",\n    \"numeroCedula\": \"1009999999\"\n}"
                         },
                         "url": {
                             "raw": "{{baseURL}}/api/alpescab/registro/usuario/cliente",
@@ -96,12 +95,12 @@
                                 "usuario",
                                 "cliente"
                             ]
-                        } 
+                        }
                     },
                     "response": []
                 },
                 {
-                    "name": "RF3: Registrar Usuario Conductor",
+                    "name": "RF3: Registrar Conductor (POST /registro/usuario/conductor)",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -112,7 +111,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"nombre\": \"Pedro Picapiedra\",\n  \"correoElectronico\": \"pedro.pica@mail.com\",\n  \"numeroCelular\": \"3107654321\",\n  \"numeroCedula\": \"2030405060\"\n}"
+                            "raw": "{\n    \"nombre\": \"Conductor Postman\",\n    \"correoElectronico\": \"conductor.postman@email.com\",\n    \"numeroCelular\": \"3008888888\",\n    \"numeroCedula\": \"1008888888\"\n}"
                         },
                         "url": {
                             "raw": "{{baseURL}}/api/alpescab/registro/usuario/conductor",
@@ -131,7 +130,7 @@
                     "response": []
                 },
                 {
-                    "name": "RF4: Registrar Vehículo (Para {{conductorId}})",
+                    "name": "RF4: Registrar Vehiculo (POST /registro/vehiculo)",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -142,7 +141,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"conductorId\": {{conductorId}}, \n  \"tipo\": \"CARRO\",\n  \"marca\": \"Mazda\",\n  \"modelo\": 2023,\n  \"color\": \"Gris\",\n  \"placa\": \"XYZ987\",\n  \"ciudadExpedicion\": \"Medellín\",\n  \"capacidadPasajeros\": 4\n}"
+                            "raw": "{\n    \"tipo\": \"carro\",\n    \"marca\": \"Toyota\",\n    \"modelo\": \"Corolla\",\n    \"color\": \"Rojo\",\n    \"placa\": \"ABC999\",\n    \"capacidadPasajeros\": 4,\n    \"nivelAsignado\": \"Estandar\",\n    \"conductor\": {\n        \"id\": \"{{conductorId}}\"\n    }\n}"
                         },
                         "url": {
                             "raw": "{{baseURL}}/api/alpescab/registro/vehiculo",
@@ -160,7 +159,7 @@
                     "response": []
                 },
                 {
-                    "name": "RF5: Registrar Disponibilidad (Usando DisponibilidadDTO)",
+                    "name": "RF5: Registrar Disponibilidad (POST /registro/disponibilidad) ⬅️ CORREGIDO",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -171,7 +170,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"diaSemana\": \"MONDAY\",\n  \"horaInicio\": \"08:00\",\n  \"horaFin\": \"12:00\",\n  \"tipoServicio\": \"Transporte de pasajeros\",\n  \"vehiculoId\": {{vehiculoId}}\n}"
+                            "raw": "{\n    \"diaSemana\": \"MONDAY\",\n    \"horaInicio\": \"10:00\",\n    \"horaFin\": \"12:00\",\n    \"tipoServicio\": \"Transporte de pasajeros\",\n    \"vehiculoId\": \"{{vehiculoId}}\"\n}"
                         },
                         "url": {
                             "raw": "{{baseURL}}/api/alpescab/registro/disponibilidad",
@@ -189,7 +188,7 @@
                     "response": []
                 },
                 {
-                    "name": "RF6: Modificar Disponibilidad ({{disponibilidadId}}) - Usa DTO",
+                    "name": "RF6: Modificar Disponibilidad (PUT /registro/disponibilidad/{id}) ⬅️ CORREGIDO",
                     "request": {
                         "method": "PUT",
                         "header": [
@@ -200,7 +199,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"horaInicio\": \"10:00\",\n  \"horaFin\": \"14:00\"\n}"
+                            "raw": "{\n    \"horaInicio\": \"13:00\",\n    \"horaFin\": \"15:00\"\n}"
                         },
                         "url": {
                             "raw": "{{baseURL}}/api/alpescab/registro/disponibilidad/{{disponibilidadId}}",
@@ -219,7 +218,7 @@
                     "response": []
                 },
                 {
-                    "name": "RF7: Registrar Punto Geográfico",
+                    "name": "RF7: Registrar Punto Geografico (POST /registro/punto)",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -230,7 +229,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"nombre\": \"Universidad de los Andes\",\n  \"direccionAproximada\": \"Carrera 1 # 18A-12\",\n  \"latitud\": 4.601, \n  \"longitud\": -74.066, \n  \"ciudadId\": 1\n}"
+                            "raw": "{\n    \"nombre\": \"Casa del Cliente\",\n    \"direccion\": \"Calle 100 # 50-20\",\n    \"latitud\": 4.67,\n    \"longitud\": -74.05,\n    \"ciudad\": {\n        \"id\": 1\n    }\n}"
                         },
                         "url": {
                             "raw": "{{baseURL}}/api/alpescab/registro/punto",
@@ -248,7 +247,7 @@
                     "response": []
                 },
                 {
-                    "name": "RF10/RF11: Registrar Revisión (Usando RevisionDTO)",
+                    "name": "RF10/RF11: Registrar Revisión (POST /registro/revision) ⬅️ CORREGIDO",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -259,7 +258,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"servicioId\": {{servicioId}}, \n  \"calificacion\": 5,\n  \"comentario\": \"Excelente servicio, muy amable y rápido.\"\n}"
+                            "raw": "{\n    \"servicioId\": \"{{servicioId}}\",\n    \"calificacion\": 5,\n    \"comentario\": \"Excelente servicio, muy rápido.\"\n}"
                         },
                         "url": {
                             "raw": "{{baseURL}}/api/alpescab/registro/revision",
@@ -279,11 +278,10 @@
             ]
         },
         {
-            "name": "II. Servicio Transaccional (RF8-RF9)",
-            "description": "Endpoints para la solicitud y finalización de servicios, implementados como transacciones.",
+            "name": "II. Servicios Transaccionales (RF8, RF9)",
             "item": [
                 {
-                    "name": "RF8: Solicitar Servicio (Transaccional - Usando SolicitudServicioDTO)",
+                    "name": "RF8: Solicitar Servicio (POST /servicio/solicitar)",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -294,7 +292,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tipoServicio\": \"Transporte de pasajeros\",\n  \"puntoPartidaId\": 1, \n  \"puntosLlegadaIds\": [2, 3],\n  \"costoEstimado\": 35.5\n}"
+                            "raw": "{\n    \"clienteId\": \"{{clienteId}}\",\n    \"tipoServicio\": \"Transporte de pasajeros\",\n    \"puntoPartidaId\": 10,\n    \"puntosLlegadaIds\": [11],\n    \"costoEstimado\": 15000.00\n}"
                         },
                         "url": {
                             "raw": "{{baseURL}}/api/alpescab/servicio/solicitar",
@@ -312,7 +310,7 @@
                     "response": []
                 },
                 {
-                    "name": "RF9: Finalizar Servicio (Transaccional - {{servicioId}})",
+                    "name": "RF9: Finalizar Servicio (PUT /servicio/finalizar/{servicioId})",
                     "request": {
                         "method": "PUT",
                         "header": [
@@ -323,7 +321,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"longitudTrayecto\": 15.5 \n}"
+                            "raw": "{\n    \"longitudTrayecto\": 8.5\n}"
                         },
                         "url": {
                             "raw": "{{baseURL}}/api/alpescab/servicio/finalizar/{{servicioId}}",
@@ -344,11 +342,10 @@
             ]
         },
         {
-            "name": "III. Consultas (RFC1-RFC4)",
-            "description": "Endpoints para los requerimientos funcionales de consulta.",
+            "name": "III. Consultas (RFC1-RFC5) y Aislamiento",
             "item": [
                 {
-                    "name": "RFC1: Histórico de Servicios por Usuario ({{clienteId}})",
+                    "name": "RFC1: Histórico de Servicios (GET /consulta/historico/usuario/{clienteId})",
                     "request": {
                         "method": "GET",
                         "header": [],
@@ -370,7 +367,7 @@
                     "response": []
                 },
                 {
-                    "name": "RFC1: Prueba Serializable ({{clienteId}})",
+                    "name": "RFC1: Prueba Aislamiento SERIALIZABLE (GET /consulta/historico/usuario/{clienteId}/serializable)",
                     "request": {
                         "method": "GET",
                         "header": [],
@@ -393,12 +390,12 @@
                     "response": []
                 },
                 {
-                    "name": "RFC1: Prueba Read-Committed ({{clienteId}})",
+                    "name": "RFC1: Prueba Aislamiento READ_COMMITTED (GET /consulta/historico/usuario/{clienteId}/readcommitted)",
                     "request": {
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseURL}}/api/alpescab/consulta/historico/usuario/{{clienteId}}/read-committed",
+                            "raw": "{{baseURL}}/api/alpescab/consulta/historico/usuario/{{clienteId}}/readcommitted",
                             "host": [
                                 "{{baseURL}}"
                             ],
@@ -409,14 +406,14 @@
                                 "historico",
                                 "usuario",
                                 "{{clienteId}}",
-                                "read-committed"
+                                "readcommitted"
                             ]
                         }
                     },
                     "response": []
                 },
                 {
-                    "name": "RFC2: Top 20 Conductores",
+                    "name": "RFC2: Top 20 Conductores (GET /consulta/top/conductores)",
                     "request": {
                         "method": "GET",
                         "header": [],
@@ -437,7 +434,7 @@
                     "response": []
                 },
                 {
-                    "name": "RFC3: Ganancias Conductor ({{conductorId}})",
+                    "name": "RFC3: Ganancias Conductor (GET /consulta/ganancias/conductor/{conductorId})",
                     "request": {
                         "method": "GET",
                         "header": [],
@@ -459,7 +456,7 @@
                     "response": []
                 },
                 {
-                    "name": "RFC4: Utilización de Servicios en Ciudad y Rango",
+                    "name": "RFC4: Utilización de Servicios en Ciudad y Rango (GET /consulta/utilizacion/{ciudadNombre})",
                     "request": {
                         "method": "GET",
                         "header": [],
