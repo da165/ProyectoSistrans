@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-//import java.time.DayOfWeek;
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -30,55 +30,74 @@ public class RegistroService {
 
     // ---------------------- RF2/RF3: REGISTRAR USUARIOS ----------------------
     // Usamos el constructor de la clase concreta (UsuarioDeServicio o UsuarioConductor)
-    public UsuarioServicioEntity registrarUsuarioDeServicio(UsuarioServicioEntity cliente) {
+    public UsuarioServicioEntity registrarUsuarioDeServicio(UsuarioServicioEntity cliente) throws Exception {
+        // Validación: Cédula y Correo Único (ya en @Column(unique=true) y el findByNumeroCedula en repo)
+        if (usuarioRepository.findByNumeroCedula(cliente.getNumeroCedula()) != null) {
+            throw new Exception("Ya existe un usuario registrado con esa cédula.");
+        }
         return usuarioRepository.save(cliente);
     }
-    
-    public UsuarioConductorEntity registrarUsuarioConductor(UsuarioConductorEntity conductor) {
+
+    public UsuarioConductorEntity registrarUsuarioConductor(UsuarioConductorEntity conductor) throws Exception {
+        // Validación: Cédula y Correo Único
+        if (usuarioRepository.findByNumeroCedula(conductor.getNumeroCedula()) != null) {
+            throw new Exception("Ya existe un usuario registrado con esa cédula.");
+        }
         return usuarioRepository.save(conductor);
     }
 
     // ---------------------- RF4: REGISTRAR VEHÍCULO ----------------------
     public VehiculoEntity registrarVehiculo(VehiculoEntity vehiculo) throws Exception {
-        // Lógica de negocio: Un conductor debe existir. La placa debe ser única.
+        // Validación: Placa Única
         if (vehiculoRepository.findByPlaca(vehiculo.getPlaca()) != null) {
-            throw new Exception("Ya existe un vehículo registrado con esta placa.");
+            throw new Exception("Ya existe un vehículo registrado con esa placa.");
         }
-        
-        // Se podría añadir lógica para determinar el 'nivelAsignado' (Estándar, Confort, Large) basado en el modelo y capacidad. [cite: 51, 52]
-        // ...
-        
+        // Validación: Conductor existe y es de tipo Conductor
+        Optional<UsuarioEntity> conductorOpt = usuarioRepository.findById(vehiculo.getConductor().getId());
+        if (conductorOpt.isEmpty() || !(conductorOpt.get() instanceof UsuarioConductorEntity)) {
+            throw new Exception("El ID del conductor no es válido.");
+        }
         return vehiculoRepository.save(vehiculo);
     }
-
-    // ---------------------- RF5/RF6: GESTIÓN DE DISPONIBILIDAD ----------------------
-    public DisponibilidadEntity registrarDisponibilidad(DisponibilidadEntity nuevaDisponibilidad) throws Exception {
-        // Lógica de negocio (RF5, RF6): No es posible tener disponibilidades que se superpongan para un mismo conductor. [cite: 77, 80]
-        
+    
+    // ---------------------- RF5: REGISTRAR DISPONIBILIDAD ----------------------
+    public DisponibilidadEntity registrarDisponibilidad(DisponibilidadEntity disponibilidad) throws Exception {
+        // Lógica de negocio: No debe superponerse con ninguna disponibilidad existente.
         List<DisponibilidadEntity> superpuestas = disponibilidadRepository.findSuperposedDisponibilidad(
-            nuevaDisponibilidad.getVehiculo(), 
-            nuevaDisponibilidad.getDiaSemana(), 
-            nuevaDisponibilidad.getHoraInicio(), 
-            nuevaDisponibilidad.getHoraFin()
+            disponibilidad.getVehiculo(),
+            disponibilidad.getDiaSemana(),
+            disponibilidad.getHoraInicio(),
+            disponibilidad.getHoraFin()
         );
         
         if (!superpuestas.isEmpty()) {
-            throw new Exception("La disponibilidad se superpone con un horario ya registrado para este conductor.");
+            throw new Exception("RF5 Fallido: La nueva disponibilidad se superpone con una franja horaria existente.");
         }
         
-        // Asumiendo que el vehículo ya tiene su 'nivelAsignado'
-        return disponibilidadRepository.save(nuevaDisponibilidad);
+        return disponibilidadRepository.save(disponibilidad);
     }
-    
-    public void modificarDisponibilidad(Long idDisponibilidad, LocalTime nuevaHoraInicio, LocalTime nuevaHoraFin) throws Exception {
-        Optional<DisponibilidadEntity> dispOpt = disponibilidadRepository.findById(idDisponibilidad);
-        if (dispOpt.isEmpty()) {
-            throw new Exception("Disponibilidad no encontrada.");
-        }
 
-        DisponibilidadEntity actual = dispOpt.get();
-        // Lógica de validación de superposición similar a RF5, excluyendo la disponibilidad que se está modificando
-        // ... (Implementar la exclusión de la disponibilidad actual en la consulta si es necesario)
+    // ---------------------- RF6: MODIFICAR DISPONIBILIDAD ----------------------
+    public void modificarDisponibilidad(Long id, LocalTime nuevaHoraInicio, LocalTime nuevaHoraFin) throws Exception {
+        DisponibilidadEntity actual = disponibilidadRepository.findById(id)
+            .orElseThrow(() -> new Exception("Disponibilidad con ID " + id + " no encontrada."));
+
+        // Lógica de negocio: Modificar el horario solo si no se superpone con OTRAS franjas horarias.
+        
+        // 1. Consulta todas las disponibilidades superpuestas.
+        List<DisponibilidadEntity> superpuestas = disponibilidadRepository.findSuperposedDisponibilidad(
+            actual.getVehiculo(),
+            actual.getDiaSemana(),
+            nuevaHoraInicio,
+            nuevaHoraFin
+        );
+
+        // 2. Filtra la lista para excluir el registro que se está modificando.        
+        for (DisponibilidadEntity superpuesta : superpuestas) {
+            if (!superpuesta.getId().equals(actual.getId())) {
+                throw new Exception("RF6 Fallido: La nueva franja horaria se superpone con otra disponibilidad existente (ID: " + superpuesta.getId() + ").");
+            }
+        }
         
         actual.setHoraInicio(nuevaHoraInicio);
         actual.setHoraFin(nuevaHoraFin);
@@ -92,11 +111,11 @@ public class RegistroService {
 
     // ---------------------- RF10/RF11: REGISTRAR REVISIÓN ----------------------
     public RevisionEntity registrarRevision(RevisionEntity revision) throws Exception {
-        // Lógica de negocio: Solo puede haber una revisión por servicio
-        if (revisionRepository.findByServicioId(revision.getServicio().getId()) != null) {
+        // Lógica de negocio: Solo puede haber una revisión por servicio        
+        if (revisionRepository.findByServicio_Id(revision.getServicio().getId()) != null) {
             throw new Exception("Ya existe una revisión registrada para este servicio.");
         }
-        // Validar que la calificación esté entre 0 y 5. [cite: 59, 61]
+        // Validar que la calificación esté entre 0 y 5.
         if (revision.getCalificacion() < 0 || revision.getCalificacion() > 5) {
             throw new Exception("La calificación debe estar entre 0 y 5.");
         }

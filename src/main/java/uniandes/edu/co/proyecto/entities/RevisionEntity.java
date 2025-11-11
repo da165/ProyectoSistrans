@@ -1,7 +1,7 @@
 package uniandes.edu.co.proyecto.entities;
 import jakarta.persistence.*;
 @Entity
-@Table(name = "REVISIONES")
+@Table(name = "REVISION") 
 public class RevisionEntity {
 
     @Id
@@ -9,14 +9,15 @@ public class RevisionEntity {
     private Long id;
 
     @Column(name = "CALIFICACION", nullable = false)
-    private Integer calificacion;// Entre 0 y 5 [cite: 59, 61]
+    private Integer calificacion;// Entre 0 y 5
 
     @Column(name = "COMENTARIO")
-    private String comentario; // Comentario de texto [cite: 59, 61]
+    private String comentario; // Comentario de texto
     
     // Relación: La revisión siempre se hace sobre un servicio prestado.
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_SERVICIO", nullable = false, unique = true) // Una revisión por servicio
+    
+    @JoinColumn(name = "ID_VIAJE", nullable = false, unique = true) // Una revisión por servicio
     private ServicioEntity servicio;
 
     // Quien hace la revisión: Puede ser Cliente o Conductor
@@ -77,5 +78,5 @@ public class RevisionEntity {
     }
     public void setRevisado(UsuarioEntity revisado) {
         this.revisado = revisado;
-    }    
+    }
 }

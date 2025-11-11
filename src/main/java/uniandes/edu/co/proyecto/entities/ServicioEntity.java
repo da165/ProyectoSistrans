@@ -2,10 +2,10 @@ package uniandes.edu.co.proyecto.entities;
 import jakarta.persistence.*;
 import java.util.Date;
 import java.util.List;
-import java.util.ArrayList;
+//import java.util.ArrayList;
 
 @Entity
-@Table(name = "SERVICIOS")
+@Table(name = "VIAJE") 
 public class ServicioEntity {
 
     @Id
@@ -13,57 +13,64 @@ public class ServicioEntity {
     private Long id;
 
     @Column(name = "TIPO_SERVICIO", nullable = false)
-    private String tipoServicio; // e.g., "Transporte de pasajeros" [cite: 49]
+    private String tipoServicio; // e.g., "Transporte de pasajeros"
 
     @Column(name = "COSTO_TOTAL", nullable = false)
-    private Double costoTotal; // Calculado por distancia y tarifa [cite: 44, 64]
+    private Double costoTotal; // Calculado por distancia y tarifa
 
     // Histórico de tiempos
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "HORA_INICIO", nullable = false)
-    private Date horaInicio; // [cite: 64]
+    private Date horaInicio; //
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "HORA_FIN") // Se actualiza en RF9
-    private Date horaFin; // [cite: 64]
+    private Date horaFin; //
 
     @Column(name = "DURACION_MINUTOS")
-    private Long duracionMinutos; // [cite: 64]
+    private Long duracionMinutos; //
 
     @Column(name = "LONGITUD_TRAYECTO") 
-    private Double longitudTrayecto; // Distancia recorrida [cite: 64]
+    private Double longitudTrayecto; // Distancia recorrida
 
-    // Relaciones
+    // Relaciones de muchos a uno
+
+    // Conductor asignado
     @ManyToOne
     @JoinColumn(name = "ID_CONDUCTOR", nullable = false)
-    private UsuarioConductorEntity conductor; // [cite: 64]
+    private UsuarioConductorEntity conductor;
 
+    // Usuario que solicita el servicio (Cliente)
     @ManyToOne
-    @JoinColumn(name = "ID_USUARIO_CLIENTE", nullable = false)
-    private UsuarioServicioEntity usuarioCliente; // Quién lo solicitó
+    @JoinColumn(name = "ID_USUARIO_SERVICIO", nullable = false)
+    private UsuarioServicioEntity usuarioCliente;
 
+    // Vehículo que realiza el servicio
     @ManyToOne
     @JoinColumn(name = "ID_VEHICULO", nullable = false)
-    private VehiculoEntity vehiculo; // [cite: 64]
+    private VehiculoEntity vehiculo;
 
+    // Punto de Partida
     @ManyToOne
-    @JoinColumn(name = "ID_PUNTO_PARTIDA", nullable = false)
-    private PuntoGeoEntity puntoPartida; // [cite: 46]
+    @JoinColumn(name = "ID_PUNTO_INICIO", nullable = false) 
+    private PuntoGeoEntity puntoPartida;
+
+    // Punto de Llegada Final
+    @ManyToOne
+   
+    @JoinColumn(name = "ID_PUNTO_FIN") // Se permite NULL si es un viaje con múltiples paradas
+    private PuntoGeoEntity puntoLlegadaFinal;
     
-    // Asumiendo una tabla intermedia o una lista de PuntosGeograficos para múltiples llegadas
-    // Aquí usamos una lista de puntos de llegada
-    @ManyToMany
-    @JoinTable(
-        name = "SERVICIO_PUNTOS_LLEGADA",
-        joinColumns = @JoinColumn(name = "ID_SERVICIO"),
-        inverseJoinColumns = @JoinColumn(name = "ID_PUNTO_GEOGRAFICO")
-    )
-    private List<PuntoGeoEntity> puntosLlegada = new ArrayList<>();// Uno o varios puntos de llegada [cite: 46]
+    // Una relación de uno a muchos (una revisión por servicio)
+    // En RevisionEntity se usó @OneToOne, lo que es correcto.
+    @OneToOne(mappedBy = "servicio", cascade = CascadeType.ALL, orphanRemoval = true)
+    private RevisionEntity revision;
+
 
     // Constructor vacío (JPA)
     public ServicioEntity() {}
 
-    // Constructor para RF8 (al iniciar el viaje)
+    // Constructor para RF8: Solicitud inicial
     public ServicioEntity(String tipoServicio, Double costoTotal, Date horaInicio, UsuarioConductorEntity conductor, UsuarioServicioEntity usuarioCliente, VehiculoEntity vehiculo, PuntoGeoEntity puntoPartida, List<PuntoGeoEntity> puntosLlegada) {
         this.tipoServicio = tipoServicio;
         this.costoTotal = costoTotal;
@@ -72,7 +79,19 @@ public class ServicioEntity {
         this.usuarioCliente = usuarioCliente;
         this.vehiculo = vehiculo;
         this.puntoPartida = puntoPartida;
-        this.puntosLlegada = puntosLlegada;
+        
+        // Asignar el último punto de la lista como punto de llegada final,
+        // asumiendo que el campo ID_PUNTO_FIN en VIAJE es para el destino final.
+        if (puntosLlegada != null && !puntosLlegada.isEmpty()) {
+            this.puntoLlegadaFinal = puntosLlegada.get(puntosLlegada.size() - 1);
+        } else {
+             this.puntoLlegadaFinal = null;
+        }
+
+        // Inicializar otros campos a null/0
+        this.horaFin = null;
+        this.duracionMinutos = 0L;
+        this.longitudTrayecto = 0.0;
     }
 
     // Getters y Setters
@@ -142,10 +161,16 @@ public class ServicioEntity {
     public void setPuntoPartida(PuntoGeoEntity puntoPartida) {
         this.puntoPartida = puntoPartida;
     }
-    public List<PuntoGeoEntity> getPuntosLlegada() {
-        return puntosLlegada;
+    public PuntoGeoEntity getPuntoLlegadaFinal() {
+        return puntoLlegadaFinal;
     }
-    public void setPuntosLlegada(List<PuntoGeoEntity> puntosLlegada) {
-        this.puntosLlegada = puntosLlegada;
+    public void setPuntoLlegadaFinal(PuntoGeoEntity puntoLlegadaFinal) {
+        this.puntoLlegadaFinal = puntoLlegadaFinal;
+    }
+    public RevisionEntity getRevision() {
+        return revision;
+    }
+    public void setRevision(RevisionEntity revision) {
+        this.revision = revision;
     }
 }
