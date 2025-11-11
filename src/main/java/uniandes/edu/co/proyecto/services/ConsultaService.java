@@ -17,7 +17,7 @@ public class ConsultaService {
     @Autowired private ServicioRepository servicioRepository;
     @Autowired private UsuarioRepository usuarioRepository;
 
-    // ---------------------- RFC1: CONSULTAR HISTÓRICO (Versión por defecto) ----------------------
+    // RFC1: CONSULTAR HISTÓRICO (Versión por defecto)
     public List<ServicioEntity> consultarHistoricoUsuario(Long clienteId) throws Exception {
         Optional<UsuarioEntity> userOpt = usuarioRepository.findById(clienteId);
         if (userOpt.isEmpty() || !(userOpt.get() instanceof UsuarioServicioEntity)) {
@@ -27,7 +27,7 @@ public class ConsultaService {
         return servicioRepository.findByUsuarioCliente(cliente);
     }
 
-    // ---------------------- RFC1 con Nivel de Aislamiento SERIALIZABLE (Punto 3) ----------------------
+    //  RFC1 con Nivel de Aislamiento SERIALIZABLE (Punto 3) 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public List<ServicioEntity> consultarHistoricoUsuario_Serializable(Long clienteId) throws Exception {
         // Primera consulta (para observar el efecto de SERIALIZABLE en el escenario de prueba) [cite: 128]
@@ -48,7 +48,7 @@ public class ConsultaService {
         return segundaConsulta; // Retorna el resultado de la segunda consulta
     }
 
-    // ---------------------- RFC1 con Nivel de Aislamiento READ_COMMITTED (Punto 3) ----------------------
+    //  RFC1 con Nivel de Aislamiento READ_COMMITTED (Punto 3)
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public List<ServicioEntity> consultarHistoricoUsuario_ReadCommitted(Long clienteId) throws Exception {
         // Primera consulta
@@ -69,17 +69,17 @@ public class ConsultaService {
         return segundaConsulta; // Retorna el resultado de la segunda consulta
     }
 
-    // ---------------------- RFC2: TOP 20 CONDUCTORES ----------------------
+    // RFC2: TOP 20 CONDUCTORES
     public List<Object[]> findTop20Conductores() {
         return servicioRepository.findTop20Conductores();
     }
 
-    // ---------------------- RFC3: GANANCIAS CONDUCTOR ----------------------
+    //  RFC3: GANANCIAS CONDUCTOR
     public List<Object[]> findGananciasConductor(Long conductorId) {
         return servicioRepository.findGananciasConductorPorVehiculoYServicio(conductorId);
     }
 
-    // ---------------------- RFC4: UTILIZACIÓN DE SERVICIOS EN CIUDAD ----------------------
+    // RFC4: UTILIZACIÓN DE SERVICIOS EN CIUDAD
     public List<Object[]> findUsoServicios(String ciudadNombre, Date fechaInicio, Date fechaFin) {
         return servicioRepository.findUsoServiciosPorCiudadYRango(ciudadNombre, fechaInicio, fechaFin);
     }

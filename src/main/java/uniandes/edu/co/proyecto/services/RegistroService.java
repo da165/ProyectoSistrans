@@ -22,13 +22,13 @@ public class RegistroService {
     @Autowired private RevisionRepository revisionRepository;
     @Autowired private MediosPagoRepository medioDePagoRepository;
 
-    // ---------------------- RF1: REGISTRAR CIUDAD ----------------------
+    // RF1: REGISTRAR CIUDAD 
     public CiudadEntity registrarCiudad(CiudadEntity ciudad) {
         // Validación básica, aunque en un proyecto real se podría buscar por nombre antes de guardar.
         return ciudadRepository.save(ciudad);
     }
 
-    // ---------------------- RF2/RF3: REGISTRAR USUARIOS ----------------------
+    //  RF2/RF3: REGISTRAR USUARIOS
     // Usamos el constructor de la clase concreta (UsuarioDeServicio o UsuarioConductor)
     public UsuarioServicioEntity registrarUsuarioDeServicio(UsuarioServicioEntity cliente) throws Exception {
         // Validación: Cédula y Correo Único (ya en @Column(unique=true) y el findByNumeroCedula en repo)
@@ -46,7 +46,7 @@ public class RegistroService {
         return usuarioRepository.save(conductor);
     }
 
-    // ---------------------- RF4: REGISTRAR VEHÍCULO ----------------------
+    // RF4: REGISTRAR VEHÍCULO 
     public VehiculoEntity registrarVehiculo(VehiculoEntity vehiculo) throws Exception {
         // Validación: Placa Única
         if (vehiculoRepository.findByPlaca(vehiculo.getPlaca()) != null) {
@@ -60,7 +60,7 @@ public class RegistroService {
         return vehiculoRepository.save(vehiculo);
     }
     
-    // ---------------------- RF5: REGISTRAR DISPONIBILIDAD ----------------------
+    // RF5: REGISTRAR DISPONIBILIDAD 
     public DisponibilidadEntity registrarDisponibilidad(DisponibilidadEntity disponibilidad) throws Exception {
         // Lógica de negocio: No debe superponerse con ninguna disponibilidad existente.
         List<DisponibilidadEntity> superpuestas = disponibilidadRepository.findSuperposedDisponibilidad(
@@ -77,7 +77,7 @@ public class RegistroService {
         return disponibilidadRepository.save(disponibilidad);
     }
 
-    // ---------------------- RF6: MODIFICAR DISPONIBILIDAD ----------------------
+    // RF6: MODIFICAR DISPONIBILIDAD 
     public void modificarDisponibilidad(Long id, LocalTime nuevaHoraInicio, LocalTime nuevaHoraFin) throws Exception {
         DisponibilidadEntity actual = disponibilidadRepository.findById(id)
             .orElseThrow(() -> new Exception("Disponibilidad con ID " + id + " no encontrada."));
@@ -104,12 +104,12 @@ public class RegistroService {
         disponibilidadRepository.save(actual);
     }
 
-    // ---------------------- RF7: REGISTRAR PUNTO GEOGRÁFICO ----------------------
+    // RF7: REGISTRAR PUNTO GEOGRÁFICO 
     public PuntoGeoEntity registrarPuntoGeografico(PuntoGeoEntity punto) {
         return puntoGeograficoRepository.save(punto);
     }
 
-    // ---------------------- RF10/RF11: REGISTRAR REVISIÓN ----------------------
+    //  RF10/RF11: REGISTRAR REVISIÓN 
     public RevisionEntity registrarRevision(RevisionEntity revision) throws Exception {
         // Lógica de negocio: Solo puede haber una revisión por servicio        
         if (revisionRepository.findByServicio_Id(revision.getServicio().getId()) != null) {
@@ -122,7 +122,7 @@ public class RegistroService {
         return revisionRepository.save(revision);
     }
     
-    // ---------------------- GESTIÓN DE MEDIOS DE PAGO (Apoyo al RF8) ----------------------
+    //  GESTIÓN DE MEDIOS DE PAGO (Apoyo al RF8) 
     public MediosPagoEntity registrarMedioDePago(MediosPagoEntity medioDePago) {
         return medioDePagoRepository.save(medioDePago);
     }
