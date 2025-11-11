@@ -30,17 +30,16 @@ public class ConsultaService {
     // ---------------------- RFC1 con Nivel de Aislamiento SERIALIZABLE (Punto 3) ----------------------
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public List<ServicioEntity> consultarHistoricoUsuario_Serializable(Long clienteId) throws Exception {
-        // Primera consulta (para observar el efecto de SERIALIZABLE en el escenario de prueba) [cite: 128]
-        List<ServicioEntity> primeraConsulta = consultarHistoricoUsuario(clienteId);
+        // Primera consulta (para observar el efecto de SERIALIZABLE en el escenario de prueba)
 
-        // Temporizador de 30 segundos (para la prueba de concurrencia con RF8) [cite: 127]
+        // Temporizador de 30 segundos (para la prueba de concurrencia con RF8)
         try {
             TimeUnit.SECONDS.sleep(30);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
-        // Segunda consulta (para observar si la orden de servicio de RF8 aparece) [cite: 128]
+        // Segunda consulta (para observar si la orden de servicio de RF8 aparece) 
         List<ServicioEntity> segundaConsulta = consultarHistoricoUsuario(clienteId);
         
         // En este nivel (SERIALIZABLE), la segunda consulta debería ser idéntica a la primera,
@@ -54,14 +53,14 @@ public class ConsultaService {
         // Primera consulta
         List<ServicioEntity> primeraConsulta = consultarHistoricoUsuario(clienteId);
         
-        // Temporizador de 30 segundos [cite: 127]
+        // Temporizador de 30 segundos 
         try {
             TimeUnit.SECONDS.sleep(30);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
-        // Segunda consulta (para observar el efecto de READ_COMMITTED en el escenario de prueba) [cite: 128]
+        // Segunda consulta (para observar el efecto de READ_COMMITTED en el escenario de prueba) 
         List<ServicioEntity> segundaConsulta = consultarHistoricoUsuario(clienteId);
         
         // En este nivel (READ_COMMITTED), la segunda consulta podría mostrar el resultado de una 

@@ -1,8 +1,8 @@
 package uniandes.edu.co.proyecto.controllers;
 import uniandes.edu.co.proyecto.entities.*;
 import uniandes.edu.co.proyecto.services.*;
-import uniandes.edu.co.proyecto.controllers.DTO.DisponibilidadDTO; // Importar el DTO
-import uniandes.edu.co.proyecto.controllers.DTO.RevisionDTO;      // Importar el DTO
+import uniandes.edu.co.proyecto.controllers.DTO.DisponibilidadDTO; 
+import uniandes.edu.co.proyecto.controllers.DTO.RevisionDTO;      
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
