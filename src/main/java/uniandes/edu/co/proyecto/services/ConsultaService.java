@@ -2,6 +2,7 @@ package uniandes.edu.co.proyecto.services;
 import uniandes.edu.co.proyecto.controllers.DTO.*;
 import uniandes.edu.co.proyecto.entities.*;
 import uniandes.edu.co.proyecto.repositories.*;
+import uniandes.edu.co.proyecto.controllers.DTO.*; 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -11,6 +12,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors; 
 
 @Service
 public class ConsultaService {
@@ -22,66 +24,86 @@ public class ConsultaService {
     public List<ServicioEntity> consultarHistoricoUsuario(Long clienteId) throws Exception {
         Optional<UsuarioEntity> userOpt = usuarioRepository.findById(clienteId);
         if (userOpt.isEmpty() || !(userOpt.get() instanceof UsuarioServicioEntity)) {
-            throw new Exception("Cliente no encontrado.");
+            throw new Exception("Cliente no encontrado o no es un usuario de servicio.");
         }
         UsuarioServicioEntity cliente = (UsuarioServicioEntity) userOpt.get();
         return servicioRepository.findByUsuarioCliente(cliente);
     }
 
-    // ---------------------- RFC1 con Nivel de Aislamiento SERIALIZABLE (Punto 3) ----------------------
+    // ---------------------- RFC1 con Nivel de Aislamiento SERIALIZABLE ----------------------
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public List<ServicioEntity> consultarHistoricoUsuario_Serializable(Long clienteId) throws Exception {
-        // Primera consulta (para observar el efecto de SERIALIZABLE en el escenario de prueba) [cite: 128]
         List<ServicioEntity> primeraConsulta = consultarHistoricoUsuario(clienteId);
-
-        // Temporizador de 30 segundos (para la prueba de concurrencia con RF8) [cite: 127]
+        
         try {
             TimeUnit.SECONDS.sleep(30);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
-        // Segunda consulta (para observar si la orden de servicio de RF8 aparece) [cite: 128]
         List<ServicioEntity> segundaConsulta = consultarHistoricoUsuario(clienteId);
         
-        // En este nivel (SERIALIZABLE), la segunda consulta debería ser idéntica a la primera,
-        // sin ver cambios hechos por transacciones concurrentes.
-        return segundaConsulta; // Retorna el resultado de la segunda consulta
+        return segundaConsulta; 
     }
 
-    // ---------------------- RFC1 con Nivel de Aislamiento READ_COMMITTED (Punto 3) ----------------------
+    // ---------------------- RFC1 con Nivel de Aislamiento READ_COMMITTED ----------------------
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public List<ServicioEntity> consultarHistoricoUsuario_ReadCommitted(Long clienteId) throws Exception {
-        // Primera consulta
         List<ServicioEntity> primeraConsulta = consultarHistoricoUsuario(clienteId);
         
-        // Temporizador de 30 segundos [cite: 127]
         try {
             TimeUnit.SECONDS.sleep(30);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
-        // Segunda consulta (para observar el efecto de READ_COMMITTED en el escenario de prueba) [cite: 128]
         List<ServicioEntity> segundaConsulta = consultarHistoricoUsuario(clienteId);
         
-        // En este nivel (READ_COMMITTED), la segunda consulta podría mostrar el resultado de una 
-        // transacción RF8 que se haya COMMITTED durante la espera.
-        return segundaConsulta; // Retorna el resultado de la segunda consulta
+        return segundaConsulta; 
     }
 
-    // ---------------------- RFC2: TOP 20 CONDUCTORES ----------------------
-    public List<Object[]> findTop20Conductores() {
-        return servicioRepository.findTop20Conductores();
+    // ---------------------- RFC2: TOP 20 CONDUCTORES (Retorna DTO) ----------------------
+    public List<TopConductorDTO> findTop20Conductores() {
+        List<Object[]> resultados = servicioRepository.findTop20Conductores();
+        
+        return resultados.stream()
+            .map(result -> new TopConductorDTO(
+                ((Number) result[0]).longValue(), 
+                ((Number) result[1]).longValue()   
+            ))
+            .collect(Collectors.toList());
     }
 
-    // ---------------------- RFC3: GANANCIAS CONDUCTOR ----------------------
-    public List<Object[]> findGananciasConductor(Long conductorId) {
-        return servicioRepository.findGananciasConductorPorVehiculoYServicio(conductorId);
+    // ---------------------- RFC3: GANANCIAS CONDUCTOR (Retorna DTO) ----------------------
+    public List<GananciaConductorDTO> findGananciasConductor(Long conductorId) {
+        List<Object[]> resultados = servicioRepository.findGananciasConductorPorVehiculoYServicio(conductorId);
+        
+        return resultados.stream()
+            .map(result -> new GananciaConductorDTO(
+                (String) result[0],                      // placaVehiculo (String)
+                (String) result[1],                      // tipoServicio (String)
+                ((Number) result[2]).doubleValue()       
+            ))
+            .collect(Collectors.toList());
     }
 
-    // ---------------------- RFC4: UTILIZACIÓN DE SERVICIOS EN CIUDAD ----------------------
-    public List<Object[]> findUsoServicios(String ciudadNombre, Date fechaInicio, Date fechaFin) {
-        return servicioRepository.findUsoServiciosPorCiudadYRango(ciudadNombre, fechaInicio, fechaFin);
+    // ---------------------- RFC4: UTILIZACIÓN DE SERVICIOS EN CIUDAD (Retorna DTO) ----------------------
+    public List<UtilizacionServiciosDTO> findUsoServicios(String ciudadNombre, Date fechaInicio, Date fechaFin) {
+         List<Object[]> resultados = servicioRepository.findUsoServiciosPorCiudadYRango(ciudadNombre, fechaInicio, fechaFin);
+         
+         
+         return resultados.stream()
+             .map(result -> {
+                 // Manejo de valores nulos o tipos inesperados
+                 Long numServicios = result[1] instanceof Number ? ((Number) result[1]).longValue() : 0L;
+                 Double porcentaje = result[2] instanceof Number ? ((Number) result[2]).doubleValue() : 0.0;
+                 
+                 return new UtilizacionServiciosDTO(
+                     (String) result[0],                      // tipoServicio (String)
+                     numServicios,                            // numeroServicios
+                     porcentaje                               // porcentajeUso
+                 );
+             })
+             .collect(Collectors.toList());
     }
 }

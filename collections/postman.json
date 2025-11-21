@@ -1,0 +1,492 @@
+{
+    "info": {
+        "_postman_id": "e6a2b0c1-2f3d-4c5e-8a0b-1d7c4b9e2f8d",
+        "name": "Alpescab - Proyecto Sistrans",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseURL",
+            "value": "http://localhost:8080",
+            "type": "string"
+        },
+        {
+            "key": "clienteId",
+            "value": "1",
+            "type": "string"
+        },
+        {
+            "key": "conductorId",
+            "value": "2",
+            "type": "string"
+        },
+        {
+            "key": "vehiculoId",
+            "value": "10",
+            "type": "string"
+        },
+        {
+            "key": "disponibilidadId",
+            "value": "20",
+            "type": "string"
+        },
+        {
+            "key": "servicioId",
+            "value": "101",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "I. Registro (RF1-RF7, RF10/RF11)",
+            "item": [
+                {
+                    "name": "RF1: Registrar Ciudad (POST /registro/ciudad)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nombre\": \"Bogota\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseURL}}/api/alpescab/registro/ciudad",
+                            "host": [
+                                "{{baseURL}}"
+                            ],
+                            "path": [
+                                "api",
+                                "alpescab",
+                                "registro",
+                                "ciudad"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "RF2: Registrar Cliente (POST /registro/usuario/cliente)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nombre\": \"Cliente Postman\",\n    \"correoElectronico\": \"cliente.postman@email.com\",\n    \"numeroCelular\": \"3009999999\",\n    \"numeroCedula\": \"1009999999\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseURL}}/api/alpescab/registro/usuario/cliente",
+                            "host": [
+                                "{{baseURL}}"
+                            ],
+                            "path": [
+                                "api",
+                                "alpescab",
+                                "registro",
+                                "usuario",
+                                "cliente"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "RF3: Registrar Conductor (POST /registro/usuario/conductor)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nombre\": \"Conductor Postman\",\n    \"correoElectronico\": \"conductor.postman@email.com\",\n    \"numeroCelular\": \"3008888888\",\n    \"numeroCedula\": \"1008888888\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseURL}}/api/alpescab/registro/usuario/conductor",
+                            "host": [
+                                "{{baseURL}}"
+                            ],
+                            "path": [
+                                "api",
+                                "alpescab",
+                                "registro",
+                                "usuario",
+                                "conductor"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "RF4: Registrar Vehiculo (POST /registro/vehiculo)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"tipo\": \"carro\",\n    \"marca\": \"Toyota\",\n    \"modelo\": \"Corolla\",\n    \"color\": \"Rojo\",\n    \"placa\": \"ABC999\",\n    \"capacidadPasajeros\": 4,\n    \"nivelAsignado\": \"Estandar\",\n    \"conductor\": {\n        \"id\": \"{{conductorId}}\"\n    }\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseURL}}/api/alpescab/registro/vehiculo",
+                            "host": [
+                                "{{baseURL}}"
+                            ],
+                            "path": [
+                                "api",
+                                "alpescab",
+                                "registro",
+                                "vehiculo"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "RF5: Registrar Disponibilidad (POST /registro/disponibilidad) ⬅️ CORREGIDO",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"diaSemana\": \"MONDAY\",\n    \"horaInicio\": \"10:00\",\n    \"horaFin\": \"12:00\",\n    \"tipoServicio\": \"Transporte de pasajeros\",\n    \"vehiculoId\": \"{{vehiculoId}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseURL}}/api/alpescab/registro/disponibilidad",
+                            "host": [
+                                "{{baseURL}}"
+                            ],
+                            "path": [
+                                "api",
+                                "alpescab",
+                                "registro",
+                                "disponibilidad"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "RF6: Modificar Disponibilidad (PUT /registro/disponibilidad/{id}) ⬅️ CORREGIDO",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"horaInicio\": \"13:00\",\n    \"horaFin\": \"15:00\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseURL}}/api/alpescab/registro/disponibilidad/{{disponibilidadId}}",
+                            "host": [
+                                "{{baseURL}}"
+                            ],
+                            "path": [
+                                "api",
+                                "alpescab",
+                                "registro",
+                                "disponibilidad",
+                                "{{disponibilidadId}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "RF7: Registrar Punto Geografico (POST /registro/punto)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nombre\": \"Casa del Cliente\",\n    \"direccion\": \"Calle 100 # 50-20\",\n    \"latitud\": 4.67,\n    \"longitud\": -74.05,\n    \"ciudad\": {\n        \"id\": 1\n    }\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseURL}}/api/alpescab/registro/punto",
+                            "host": [
+                                "{{baseURL}}"
+                            ],
+                            "path": [
+                                "api",
+                                "alpescab",
+                                "registro",
+                                "punto"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "RF10/RF11: Registrar Revisión (POST /registro/revision) ⬅️ CORREGIDO",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"servicioId\": \"{{servicioId}}\",\n    \"calificacion\": 5,\n    \"comentario\": \"Excelente servicio, muy rápido.\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseURL}}/api/alpescab/registro/revision",
+                            "host": [
+                                "{{baseURL}}"
+                            ],
+                            "path": [
+                                "api",
+                                "alpescab",
+                                "registro",
+                                "revision"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "II. Servicios Transaccionales (RF8, RF9)",
+            "item": [
+                {
+                    "name": "RF8: Solicitar Servicio (POST /servicio/solicitar)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"clienteId\": \"{{clienteId}}\",\n    \"tipoServicio\": \"Transporte de pasajeros\",\n    \"puntoPartidaId\": 10,\n    \"puntosLlegadaIds\": [11],\n    \"costoEstimado\": 15000.00\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseURL}}/api/alpescab/servicio/solicitar",
+                            "host": [
+                                "{{baseURL}}"
+                            ],
+                            "path": [
+                                "api",
+                                "alpescab",
+                                "servicio",
+                                "solicitar"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "RF9: Finalizar Servicio (PUT /servicio/finalizar/{servicioId})",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"longitudTrayecto\": 8.5\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseURL}}/api/alpescab/servicio/finalizar/{{servicioId}}",
+                            "host": [
+                                "{{baseURL}}"
+                            ],
+                            "path": [
+                                "api",
+                                "alpescab",
+                                "servicio",
+                                "finalizar",
+                                "{{servicioId}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "III. Consultas (RFC1-RFC5) y Aislamiento",
+            "item": [
+                {
+                    "name": "RFC1: Histórico de Servicios (GET /consulta/historico/usuario/{clienteId})",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseURL}}/api/alpescab/consulta/historico/usuario/{{clienteId}}",
+                            "host": [
+                                "{{baseURL}}"
+                            ],
+                            "path": [
+                                "api",
+                                "alpescab",
+                                "consulta",
+                                "historico",
+                                "usuario",
+                                "{{clienteId}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "RFC1: Prueba Aislamiento SERIALIZABLE (GET /consulta/historico/usuario/{clienteId}/serializable)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseURL}}/api/alpescab/consulta/historico/usuario/{{clienteId}}/serializable",
+                            "host": [
+                                "{{baseURL}}"
+                            ],
+                            "path": [
+                                "api",
+                                "alpescab",
+                                "consulta",
+                                "historico",
+                                "usuario",
+                                "{{clienteId}}",
+                                "serializable"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "RFC1: Prueba Aislamiento READ_COMMITTED (GET /consulta/historico/usuario/{clienteId}/readcommitted)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseURL}}/api/alpescab/consulta/historico/usuario/{{clienteId}}/readcommitted",
+                            "host": [
+                                "{{baseURL}}"
+                            ],
+                            "path": [
+                                "api",
+                                "alpescab",
+                                "consulta",
+                                "historico",
+                                "usuario",
+                                "{{clienteId}}",
+                                "readcommitted"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "RFC2: Top 20 Conductores (GET /consulta/top/conductores)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseURL}}/api/alpescab/consulta/top/conductores",
+                            "host": [
+                                "{{baseURL}}"
+                            ],
+                            "path": [
+                                "api",
+                                "alpescab",
+                                "consulta",
+                                "top",
+                                "conductores"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "RFC3: Ganancias Conductor (GET /consulta/ganancias/conductor/{conductorId})",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseURL}}/api/alpescab/consulta/ganancias/conductor/{{conductorId}}",
+                            "host": [
+                                "{{baseURL}}"
+                            ],
+                            "path": [
+                                "api",
+                                "alpescab",
+                                "consulta",
+                                "ganancias",
+                                "conductor",
+                                "{{conductorId}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "RFC4: Utilización de Servicios en Ciudad y Rango (GET /consulta/utilizacion/{ciudadNombre})",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseURL}}/api/alpescab/consulta/utilizacion/Bogota?fechaInicio=2025-10-01&fechaFin=2025-11-30",
+                            "host": [
+                                "{{baseURL}}"
+                            ],
+                            "path": [
+                                "api",
+                                "alpescab",
+                                "consulta",
+                                "utilizacion",
+                                "Bogota"
+                            ],
+                            "query": [
+                                {
+                                    "key": "fechaInicio",
+                                    "value": "2025-10-01"
+                                },
+                                {
+                                    "key": "fechaFin",
+                                    "value": "2025-11-30"
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ]
+}
