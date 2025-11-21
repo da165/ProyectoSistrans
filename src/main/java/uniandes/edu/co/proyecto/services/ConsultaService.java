@@ -2,7 +2,6 @@ package uniandes.edu.co.proyecto.services;
 import uniandes.edu.co.proyecto.controllers.DTO.*;
 import uniandes.edu.co.proyecto.entities.*;
 import uniandes.edu.co.proyecto.repositories.*;
-import uniandes.edu.co.proyecto.controllers.DTO.*; 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -17,8 +16,10 @@ import java.util.stream.Collectors;
 @Service
 public class ConsultaService {
 
-    @Autowired private ServicioRepository servicioRepository;
-    @Autowired private UsuarioRepository usuarioRepository;
+    @Autowired 
+    private ServicioRepository servicioRepository;
+    @Autowired 
+    private UsuarioRepository usuarioRepository;
 
     // ---------------------- RFC1: CONSULTAR HISTÓRICO (Versión por defecto) ----------------------
     public List<ServicioEntity> consultarHistoricoUsuario(Long clienteId) throws Exception {

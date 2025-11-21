@@ -12,10 +12,22 @@ public class GananciaConductorDTO {
     }
 
     // Getters y Setters
-    public String getPlacaVehiculo() { return placaVehiculo; }
-    public void setPlacaVehiculo(String placaVehiculo) { this.placaVehiculo = placaVehiculo; }
-    public String getTipoServicio() { return tipoServicio; }
-    public void setTipoServicio(String tipoServicio) { this.tipoServicio = tipoServicio; }
-    public Double getGananciasTotales() { return gananciasTotales; }
-    public void setGananciasTotales(Double gananciasTotales) { this.gananciasTotales = gananciasTotales; }
+    public String getPlacaVehiculo() {
+         return placaVehiculo; 
+        }
+    public void setPlacaVehiculo(String placaVehiculo) {
+         this.placaVehiculo = placaVehiculo; 
+        }
+    public String getTipoServicio() {
+         return tipoServicio; 
+        }
+    public void setTipoServicio(String tipoServicio) {
+         this.tipoServicio = tipoServicio; 
+        }
+    public Double getGananciasTotales() {
+         return gananciasTotales; 
+        }
+    public void setGananciasTotales(Double gananciasTotales) {
+         this.gananciasTotales = gananciasTotales; 
+        }
 }

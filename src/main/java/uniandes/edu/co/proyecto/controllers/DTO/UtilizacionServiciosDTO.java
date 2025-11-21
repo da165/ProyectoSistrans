@@ -13,10 +13,21 @@ public class UtilizacionServiciosDTO {
     }
 
     // Getters y Setters
-    public String getTipoServicio() { return tipoServicio; }
-    public void setTipoServicio(String tipoServicio) { this.tipoServicio = tipoServicio; }
-    public Long getNumeroServicios() { return numeroServicios; }
-    public void setNumeroServicios(Long numeroServicios) { this.numeroServicios = numeroServicios; }
-    public Double getPorcentajeUso() { return porcentajeUso; }
-    public void setPorcentajeUso(Double porcentajeUso) { this.porcentajeUso = porcentajeUso; }
+    public String getTipoServicio() {
+         return tipoServicio; }
+    public void setTipoServicio(String tipoServicio) {
+         this.tipoServicio = tipoServicio; 
+        }
+    public Long getNumeroServicios() {
+         return numeroServicios; 
+        }
+    public void setNumeroServicios(Long numeroServicios) {
+         this.numeroServicios = numeroServicios; 
+        }
+    public Double getPorcentajeUso() {
+         return porcentajeUso; 
+        }
+    public void setPorcentajeUso(Double porcentajeUso) {
+         this.porcentajeUso = porcentajeUso; 
+        }
 }

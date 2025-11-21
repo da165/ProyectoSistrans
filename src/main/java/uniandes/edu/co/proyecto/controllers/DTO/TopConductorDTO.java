@@ -11,8 +11,16 @@ public class TopConductorDTO {
     }
 
     // Getters y Setters
-    public Long getConductorId() { return conductorId; }
-    public void setConductorId(Long conductorId) { this.conductorId = conductorId; }
-    public Long getNumeroServicios() { return numeroServicios; }
-    public void setNumeroServicios(Long numeroServicios) { this.numeroServicios = numeroServicios; }
+    public Long getConductorId() {
+         return conductorId; 
+        }
+    public void setConductorId(Long conductorId) {
+         this.conductorId = conductorId; 
+        }
+    public Long getNumeroServicios() {
+         return numeroServicios; 
+        }
+    public void setNumeroServicios(Long numeroServicios) {
+         this.numeroServicios = numeroServicios; 
+        }
 }
